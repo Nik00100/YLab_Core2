@@ -105,6 +105,7 @@ public class ComplexExamples {
         Map<Integer,Integer> map = new HashMap<>();
         List<Integer> list = new ArrayList<>();
         IntStream.range(0, array.length)
+                .filter(Objects::nonNull)
                 .peek(i->map.put(array[i],i ))
                 .filter(i-> map.containsKey(sum-array[i]))
                 .peek(i->list.add(array[map.get(sum-array[i])]))
@@ -122,6 +123,7 @@ public class ComplexExamples {
         String[] chars = key.split("");
         // проверка на то, что все символы ключа содержатся в слове
         boolean r1 = Arrays.stream(chars)
+                .filter(Objects::nonNull)
                 .map(ch->{
                     boolean flag = Pattern.compile(".*" + ch+ ".*").matcher(sb.toString()).matches();
                     if (flag) {
