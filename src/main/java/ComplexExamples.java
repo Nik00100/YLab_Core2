@@ -61,37 +61,14 @@ public class ComplexExamples {
     };
 
     //Task1 --------------------------------------------------------------------------------
-
-    /* Убрать дубликаты, отсортировать по идентификатору, сгруппировать по имени,
-    найти количество человек в каждой группе*/
-    public static List<String> taskOneV1 (Person[] persons) {
+    /*На входе массив Person[] - на выходе хеш-таблица без дубликатов и null-объектов Person,
+    сгруппированная по имени */
+    public static Map<String,List<Person>> taskOne (Person[] persons) {
         return Arrays.stream(persons)
                 .distinct()
+                .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(Person::getName).reversed())
-                .collect(Collectors.groupingBy(Person::getName,Collectors.counting()))
-                .entrySet().stream()
-                .map(entry-> new StringBuilder().append("Key: ").append(entry.getKey()).append("\n")
-                        .append("Value: ").append(entry.getValue()).toString())
-                .collect(Collectors.toList());
-    }
-
-    /*Убрать дубликаты, отсортировать по идентификатору, сгруппировать по имени,
-    в каждой группе вывести ключ (имя, по которому производилась группировка) и
-    всех людей из этой группы с порядковым номером и id*/
-    public static List<String> taskOne (Person[] persons) {
-        return Arrays.asList(persons).stream()
-                .distinct()
-                .collect(Collectors.groupingBy(Person::getName))
-                .entrySet().stream()
-                .map(entry -> {
-                    AtomicInteger index = new AtomicInteger();
-                    return new StringBuilder().append(entry.getKey() + ":").append("\n")
-                            .append(entry.getValue().stream()
-                                    .map(person -> (index.getAndIncrement() + 1) + " - " + person.toString())
-                                    .collect(Collectors.joining("\n")))
-                            .toString();
-                })
-                .collect(Collectors.toList());
+                .collect(Collectors.groupingBy(Person::getName));
     }
 
     //Task2 --------------------------------------------------------------------------------
@@ -147,9 +124,11 @@ public class ComplexExamples {
         boolean r1 = Arrays.stream(chars)
                 .map(ch->{
                     boolean flag = Pattern.compile(".*" + ch+ ".*").matcher(sb.toString()).matches();
-                    int index = sb.indexOf(ch);
-                    list.add(index);
-                    if (flag) sb.deleteCharAt(index);
+                    if (flag) {
+                        int index = sb.indexOf(ch);
+                        sb.deleteCharAt(index);
+                        list.add(index);
+                    }
                     return flag;
                 })
                 .allMatch( f->f);
@@ -161,24 +140,39 @@ public class ComplexExamples {
 
 
     public static void main(String[] args) {
-        System.out.println("Raw data (taskOne & taskOneV1):");
+        System.out.println("Raw data (taskOne):");
 
         for (Person person : RAW_DATA) {
             System.out.println(person.id + " - " + person.name);
         }
 
+        /*Task1 - убрать дубликаты, отсортировать по идентификатору, сгруппировать по имени,
+        в каждой группе вывести ключ (имя, по которому производилась группировка) и
+        всех людей из этой группы с порядковым номером и id*/
         System.out.println();
         System.out.println("************************************************************");
-        System.out.println();
-
         System.out.println("Duplicate filtered, grouped by name, sorted by name and id (taskOne):");
-        List<String> taskOne = taskOne(RAW_DATA);
-        taskOne.stream().forEach(System.out::println);
+        taskOne(RAW_DATA).entrySet().stream()
+                .map(entry -> {
+                    AtomicInteger index = new AtomicInteger();
+                    return new StringBuilder(entry.getKey() + ":" + "\n")
+                            .append(entry.getValue().stream()
+                                    .map(person -> (index.getAndIncrement() + 1) + " - " + person.toString())
+                                    .collect(Collectors.joining("\n")))
+                            .toString();
+                })
+                .forEach(System.out::println);
         System.out.println();
 
-        System.out.println("Duplicate filtered, grouped by name, sorted by name and find quantity of persons with same name (taskOneV1):");
-        List<String> taskOneV1 = taskOneV1(RAW_DATA);
-        taskOneV1.stream().forEach(System.out::println);
+        /* Task1 - убрать дубликаты, отсортировать по идентификатору, сгруппировать по имени,
+        найти количество человек в каждой группе*/
+        System.out.println("Duplicate filtered, grouped by name, sorted by name " + "\n" +
+                "and find quantity of persons with same name (taskOne):");
+        taskOne(RAW_DATA).entrySet().stream()
+                .map(entry -> new StringBuilder("Key: " + entry.getKey() + "\n")
+                        .append("Value: " + entry.getValue().size()).toString())
+                .forEach(System.out::println);
+        System.out.println();
 
         int[] array = {3, 4, 2, 7};
         System.out.println("************************************************************");
@@ -186,33 +180,19 @@ public class ComplexExamples {
         System.out.println("Input array for taskTwo: " + Arrays.toString(array));
         System.out.println("Sum of elements equals 10: " + taskTwo(array,10).toString());
         System.out.println();
-
-        System.out.println("************************************************************");
-        System.out.println();
         System.out.println("Input array for taskTwoV1: " + Arrays.toString(array));
         System.out.println("Sum of elements equals 10: " + taskTwoV1(array,10));
         System.out.println();
+        System.out.println("************************************************************");
+        System.out.println();
 
-        System.out.println("Результаты выполнения функции fuzzySearch:");
-        System.out.println("************************************************************");
-        System.out.println("Результат функции fuzzySearch(\"car\", \"ca6$$#_rtwheel\"): "
-                + fuzzySearch("car", "ca6$$#_rtwheel")); // true
-        System.out.println("************************************************************");
-        System.out.println("Результат функции fuzzySearch(\"cwhl\", \"cartwheel\"): "
-                + fuzzySearch("cwhl", "cartwheel")); // true
-        System.out.println("************************************************************");
-        System.out.println("Результат функции fuzzySearch(\"cwhee\", \"cartwheel\"): "
-                + fuzzySearch("cwhee", "cartwheel")); // true
-        System.out.println("************************************************************");
-        System.out.println("Результат функции fuzzySearch(\"cartwheel\", \"cartwheel\"): "
-                + fuzzySearch("cartwheel", "cartwheel")); // true
-        System.out.println("************************************************************");
-        System.out.println("Результат функции fuzzySearch(\"cwheeel\", \"cartwheel\"): "
-                + fuzzySearch("cwheeel", "cartwheel")); // false
-        System.out.println("************************************************************");
-        System.out.println("Результат функции fuzzySearch(\"lw\", \"cartwheel\"): "
-                + fuzzySearch("lw", "cartwheel")); // false
-
+        System.out.println("Function fuzzySearch results:");
+        System.out.println("Result fuzzySearch(\"car\", \"ca6$$#_rtwheel\"): " + fuzzySearch("car", "ca6$$#_rtwheel")); // true
+        System.out.println("Result fuzzySearch(\"cwhl\", \"cartwheel\"): " + fuzzySearch("cwhl", "cartwheel")); // true
+        System.out.println("Result fuzzySearch(\"cwhee\", \"cartwheel\"): " + fuzzySearch("cwhee", "cartwheel")); // true
+        System.out.println("Result fuzzySearch(\"cartwheel\", \"cartwheel\"): " + fuzzySearch("cartwheel", "cartwheel")); // true
+        System.out.println("Result fuzzySearch(\"cwheeel\", \"cartwheel\"): " + fuzzySearch("cwheeel", "cartwheel")); // false
+        System.out.println("Result fuzzySearch(\"lw\", \"cartwheel\"): " + fuzzySearch("lw", "cartwheel")); // false
 
     }
 }
