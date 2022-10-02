@@ -88,4 +88,4 @@
                 fuzzySearch("cwheeel", "cartwheel"); // false
                 fuzzySearch("lw", "cartwheel"); // false
 
-# Добавлены тесты методов taskOne(), taskTwo(), fuzzySearch()
+# Добавлены тесты методов taskOne(), taskTwo(), fuzzySearch() 
